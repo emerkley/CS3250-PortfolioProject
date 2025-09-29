@@ -31,8 +31,9 @@ public class HomePane extends BorderPane{
         setBottom(buttonBox);
         
         
-        // Asked Chat to help with onclick actions most of the code was by it
-        // Had some struggles getting the it to work. This 
+        // Asked Chat to help with onclick actions
+        // When the button is clicked, it retrieves the text from the nameField and prints it in the console then clears the name
+		// from the textbox.
         createUserBtn.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
@@ -47,3 +48,4 @@ public class HomePane extends BorderPane{
         });
 	}
 }
+
