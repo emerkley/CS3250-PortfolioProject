@@ -17,12 +17,13 @@ public class HomePane extends BorderPane{
 	private BankStatsPane statsPane;
 	 private ObservableList<User> users = FXCollections.observableArrayList();
 	 
-	 private ListView<String> userListView = new ListView<>(); 
+	 private ListView<User> userListView = new ListView<>(); 
 	 // W3 schools for more List info https://www.w3schools.com/java/java_arraylist.asp
 	
 	 private Label checkingLabel = new Label("Checking: ");
 	 private Label savingsLabel = new Label("Savings: ");
 	 private Label goalLabel = new Label("Goal: ");
+	 private Label userInfoLabel = new Label("User: ");
 	
 	public HomePane(BankStatsPane statsPane) {
 		this.statsPane = statsPane;
@@ -41,49 +42,61 @@ public class HomePane extends BorderPane{
 	     
 		// Make the buttons to create or view the users
         Button createUserBtn = new Button("Create New User");
-        Button viewUsersBtn = new Button("View Existing Users");
         
         VBox buttonBox = new VBox(10);
-        buttonBox.getChildren().addAll(createUserBtn, viewUsersBtn);
+        buttonBox.getChildren().add(createUserBtn);
         buttonBox.setAlignment(Pos.CENTER_LEFT);
         setBottom(buttonBox);
+        
+        //Add accounts to left side 
+        VBox accountBox = new VBox(5, userInfoLabel, checkingLabel, savingsLabel, goalLabel);
+        accountBox.setAlignment(Pos.CENTER_LEFT);
+        setLeft(accountBox);
         
         // Write the list of users 10/3
         VBox userListBox = new VBox(5, new Label("Users:"), userListView);
         setRight(userListBox);
         userListBox.setAlignment(Pos.CENTER_LEFT);
         
+        
         // Asked Chat to help with onclick actions most of the code was by it
-        // Had some struggles getting the it to work. This 
+        // Had some struggles getting the it to work.
         createUserBtn.setOnAction(e -> {
             String name = nameField.getText();
             if (!name.isEmpty()) {
                 User newUser = new User(name, 0);
-                users.add(newUser);
-
-                // Update statsPane 
-                statsPane.updateUsers(users);
-                userListView.getItems().add(newUser.getName() + " (Acct: " + newUser.getUserAccountNum() + ")");
                 
+                // Set initial  balance and a base/starter deposit
+                newUser.getCheckingAccount().deposit(100);
+                newUser.getSavingsAccount().deposit(50);
+                newUser.getGoalAccount().setGoal("Vacation", 500);
+                newUser.getGoalAccount().deposit(25);
+
+                // add and users to list
+                users.add(newUser);
+                statsPane.updateUsers(users);
+                
+                userListView.getItems().add(newUser);
+                userListView.getSelectionModel().select(newUser);
+               
                 nameField.clear();
             } else {
                 System.out.println("Please enter a name first!");
             }
+            
         });
-        
-        viewUsersBtn.setOnAction(e ->{
-        	statsPane.updateUsers(users);
-        });
-        
-        userListView.getSelectionModel().selectedIndexProperty().addListener((obs, oldVal, newVal) -> {
-            int index = newVal.intValue();
-            if (index >= 0 && index < users.size()) {
-                User selected = users.get(index);
-                checkingLabel.setText("Checking: $" + selected.getCheckingAccount().getBalance());
-                savingsLabel.setText("Savings: $" + selected.getSavingsAccount().getBalance());
-                goalLabel.setText("Goal (" + selected.getGoalAccount().getGoalName() + "): $" + selected.getGoalAccount().getBalance());
+        // Chat GPT helped with the display user info onClick/when highlighted
+        userListView.getSelectionModel().selectedItemProperty().addListener((obs, oldUser, newUser) -> {
+            if (newUser != null) {
+                displayUserInfo(newUser);
             }
         });
         
 	}
+    private void displayUserInfo(User user) {
+        userInfoLabel.setText("User: " + user.getName() + " (Acct: " + user.getUserAccountNum() + ")");
+        checkingLabel.setText("Checking: $" + user.getCheckingAccount().getBalance());
+        savingsLabel.setText("Savings: $" + user.getSavingsAccount().getBalance());
+        goalLabel.setText("Goal (" + user.getGoalAccount().getGoalName() + "): $" + user.getGoalAccount().getBalance());
+    }
 }

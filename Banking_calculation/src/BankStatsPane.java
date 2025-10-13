@@ -16,13 +16,15 @@ public class BankStatsPane extends VBox{
 		usersLabel = new Label("No users yet.");
 		
 		getChildren().addAll(appLabel, userCountLabel);
-		
 		setSpacing(10);
         setAlignment(Pos.CENTER);
 		
 	}
 	
     public void updateUsers(List<User> users) {
+    	int count = users.size();
+    	userCountLabel.setText("Total users: " + count);
+    	
         if (users.isEmpty()) {
             usersLabel.setText("No users created yet.");
         } else {

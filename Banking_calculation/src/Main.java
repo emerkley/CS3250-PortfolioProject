@@ -32,11 +32,19 @@ public class Main {
 
 
 // TODO
-/* Add in a Misc account
- * Add in interest rates
- * Add in parent/child account link
- * Take info from 05_Basic_JavaFX and add it into here so you can add widgits to here (Wait until we get listeners done)
+/* Add in a withdraw and deposit 
+ * Add in a delete account button or reset account for goal
+ * Complete goal progress (potential goal bar and victory screen?)
+ * Make it look pretty :)
  * 
+ * (Review)
+ * Go over 09_JavaFx file to learn more of OnClick items
  * 
+ * 10/5-12 Commits
+ * added items to Todo for what i still need to do 
+ * Increased use count when entering new name
+ * Added in vbox to store users account information and set up a base start
  * 
+ * 10/13-19 Commits
+ *
  * */
