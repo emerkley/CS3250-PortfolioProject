@@ -32,19 +32,8 @@ public class Main {
 
 
 // TODO
-/* Add in a withdraw and deposit 
- * Add in a delete account button or reset account for goal
- * Complete goal progress (potential goal bar and victory screen?)
- * Make it look pretty :)
- * 
- * (Review)
- * Go over 09_JavaFx file to learn more of OnClick items
- * 
- * 10/5-12 Commits
- * added items to Todo for what i still need to do 
- * Increased use count when entering new name
- * Added in vbox to store users account information and set up a base start
- * 
- * 10/13-19 Commits
+/* Make a database for it to keep track of (Names of people and accounts, Transactions, goals)
+ * deposit and withdrawl
+ * show data on devices.
  *
  * */

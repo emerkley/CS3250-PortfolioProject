@@ -30,6 +30,7 @@ public class User {
         System.out.println("Savings account created.");
     }
     
+    // getters and setters
 	public int getAge() {return age;}
 	public void setAge(int age) {this.age = age;}
 	public String getName() {return name;}

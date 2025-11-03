@@ -11,8 +11,7 @@ public class BankStatsPane extends VBox{
 	 
 	    // just basic text for the home page 
 	public BankStatsPane() {
-		appLabel = new Label("Merkley's underground banking");
-		userCountLabel = new Label("Total users: 0");
+		appLabel = new Label("Merkley's Family Banking setup");
 		usersLabel = new Label("No users yet.");
 		
 		getChildren().addAll(appLabel, userCountLabel);
@@ -22,9 +21,6 @@ public class BankStatsPane extends VBox{
 	}
 	
     public void updateUsers(List<User> users) {
-    	int count = users.size();
-    	userCountLabel.setText("Total users: " + count);
-    	
         if (users.isEmpty()) {
             usersLabel.setText("No users created yet.");
         } else {
