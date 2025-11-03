@@ -6,8 +6,10 @@ import javafx.collections.ObservableList;
 
 public class BankAppPane extends Application {
     private Stage primaryStage;
-    private ObservableList<User> users = FXCollections.observableArrayList();
-
+    private ObservableList<User> users;
+    private BankDatabase database = new BankDatabase();
+    
+    
     public static void main(String[] args) {
         launch(args);
     }
@@ -15,6 +17,10 @@ public class BankAppPane extends Application {
     @Override
     public void start(Stage primaryStage) {
         this.primaryStage = primaryStage;
+        
+        // Loads users from database
+        users = FXCollections.observableArrayList(database.getUsers());
+        
         showHomeScene();
         primaryStage.setTitle("Merkley's Underground Banking");
         primaryStage.show();

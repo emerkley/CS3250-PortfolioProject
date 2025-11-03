@@ -1,15 +1,18 @@
 import javafx.geometry.Pos;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+
+import java.util.Optional;
+
 import javafx.collections.ObservableList;
 
 // Show the User list on  a scene instead of the home pane
 public class UserListPane extends BorderPane {
-    private Label userInfoLabel = new Label("Select a user to view details");
 
     public UserListPane(BankAppPane app, ObservableList<User> users) {
         Label title = new Label("User List: (Select a user)");
@@ -28,19 +31,27 @@ public class UserListPane extends BorderPane {
         userList.getSelectionModel().selectedItemProperty().addListener((obs, oldUser, newUser) -> {
         	viewUserBtn.setDisable(newUser == null);
         	deleteUserBtn.setDisable(newUser == null);
-        	
-        	if (newUser != null) {
-        		userInfoLabel.setText("Selected: " + newUser.getName() + " (Acct: " + newUser.getUserAccountNum() + ")");
-            }
-        	else {
-        		userInfoLabel.setText("Select a user from the list");
-        	}
+
         });
         
-        VBox infoBox = new VBox(5, userInfoLabel);
-        infoBox.setAlignment(Pos.CENTER_LEFT);
+        deleteUserBtn.setOnAction(e ->{
+        	 User selectedUser = userList.getSelectionModel().getSelectedItem();
+        	 if (selectedUser != null) {
+      
+        		 // Asked chat to learn how to write code for confirm deleting a user.
+        	        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        	        confirm.setTitle("Confirm Deletion");
+        	        confirm.setHeaderText("Delete User");
+        	        confirm.setContentText("Are you sure you want to delete " + selectedUser.getName() + "?");
 
-        VBox rightBox = new VBox(10, title, userList, backBtn, viewUserBtn, deleteUserBtn);
+        	        Optional<ButtonType> result = confirm.showAndWait();
+        	        if (result.isPresent() && result.get() == ButtonType.OK) {
+        	            userList.getItems().remove(selectedUser);
+        	        }
+        	    }
+        });
+
+        VBox rightBox = new VBox(10, title, userList, viewUserBtn, deleteUserBtn, backBtn);
         rightBox.setAlignment(Pos.BOTTOM_LEFT);
         
         viewUserBtn.setOnAction(e -> {
@@ -51,6 +62,5 @@ public class UserListPane extends BorderPane {
         });
 
         setCenter(rightBox);
-        setLeft(infoBox);
     }
 }

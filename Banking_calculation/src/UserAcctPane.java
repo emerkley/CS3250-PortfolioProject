@@ -62,7 +62,6 @@ public class UserAcctPane extends BorderPane {
         checkingLabel.setText("Checking: $" + user.getCheckingAccount().getBalance());
         savingsLabel.setText("Savings: $" + user.getSavingsAccount().getBalance());
         goalLabel.setText("Goal (" + user.getGoalAccount().getGoalName() + "): $" 
-            + user.getGoalAccount().getBalance() + " (" 
-            + user.getGoalAccount().getProgress() + "%)");
+            + user.getGoalAccount().getBalance());
     }
 }
