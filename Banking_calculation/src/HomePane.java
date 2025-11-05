@@ -16,18 +16,24 @@ public class HomePane extends BorderPane {
         Label nameLabel = new Label("Enter Your Name:");
         TextField nameField = new TextField();
         nameField.setPromptText("Type name here");
+        Label ageLabel = new Label("Enter Your age:");
+        TextField ageField = new TextField();
+        ageField.setPromptText("Type age here");
+       
         
         Label statusLabel = new Label();
 
         Button createUserBtn = new Button("Create User");
         Button viewUsersBtn = new Button("View User List");
 
-        centerBox.getChildren().addAll(title, nameLabel, nameField, createUserBtn, statusLabel, viewUsersBtn);
+        centerBox.getChildren().addAll(title, nameLabel, nameField, ageLabel, ageField, createUserBtn, statusLabel, viewUsersBtn);
         setCenter(centerBox);
         
         createUserBtn.setOnAction(e -> {
             String name = nameField.getText().trim();
-            if (!name.isEmpty()) {
+            String age = ageField.getText().trim();
+            //TODO convert age to a int from the textfield
+            if (!name.isEmpty() && !age.isEmpty() ) {
                 User newUser = new User(name, 18);
                 newUser.getCheckingAccount().deposit(100);
                 newUser.getSavingsAccount().deposit(50);
@@ -38,7 +44,7 @@ public class HomePane extends BorderPane {
                 statusLabel.setText("User: " + name + " created!");
                 nameField.clear();
             } else {
-                statusLabel.setText("Please enter a name first!");
+                statusLabel.setText("Please enter a name and age first!");
             }
         });
 
