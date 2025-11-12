@@ -3,13 +3,26 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 
 public class GoalsPane extends BorderPane {
+	private Label goalsLabel;
+	
+    private UserSelection userSelection;
+    
     public GoalsPane(BankAppPane app, User selectedUser) {
+    	this.userSelection = new UserSelection(selectedUser);
         Label title = new Label("Goals");
         title.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
         setTop(title);
         BorderPane.setAlignment(title, Pos.CENTER);
+        
+        goalsLabel = new Label();
+        updateLables(); 
+        VBox infoBox = new VBox(10, goalsLabel);
+        infoBox.setAlignment(Pos.CENTER_LEFT);
+        infoBox.setStyle("-fx-padding: 20;");
+        setLeft(infoBox);
 
         Button backBtn = new Button("Back");
         HBox bottomBox = new HBox(backBtn);
@@ -17,5 +30,10 @@ public class GoalsPane extends BorderPane {
         setBottom(bottomBox);
 
         backBtn.setOnAction(e -> app.UserAcctScene(selectedUser));
+    }
+    
+    private void updateLables() {
+    	User user = userSelection.getSelectedUser();
+    	goalsLabel.setText("Goals: $" + user.getGoalAccount().getBalance());
     }
 }
