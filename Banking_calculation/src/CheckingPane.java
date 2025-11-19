@@ -9,6 +9,7 @@ import javafx.scene.layout.VBox;
 public class CheckingPane extends BorderPane {
     private Label checkingLabel;
     private UserSelection userSelection;
+    User user = userSelection.getSelectedUser();
 
     public CheckingPane(BankAppPane app, User selectedUser) {
         this.userSelection = new UserSelection(selectedUser);
@@ -45,13 +46,11 @@ public class CheckingPane extends BorderPane {
         HBox buttonBox = new HBox(10, depositBtn, withdrawBtn);
         buttonBox.setAlignment(Pos.CENTER_LEFT);
 
-        // Center layout
         VBox centerBox = new VBox(15, amountBox, buttonBox);
         centerBox.setAlignment(Pos.CENTER_LEFT);
         centerBox.setStyle("-fx-padding: 20;");
         setCenter(centerBox);
 
-        // Button to return to UserAcct
         Button backBtn = new Button("Back");
         HBox bottomBox = new HBox(backBtn);
         bottomBox.setAlignment(Pos.CENTER);
@@ -59,9 +58,16 @@ public class CheckingPane extends BorderPane {
         setBottom(bottomBox);
 
         backBtn.setOnAction(e -> app.UserAcctScene(selectedUser));
+        
+        depositBtn.setOnAction(e -> {
+            double amount = Double.parseDouble(amountField.getText());
+            TransactionManager.deposit(user.getCheckingAccount(), amount);
+            updateLabels();
+        });
+
     }
     
-    //TODO: add trasnsaciton history to the side & a reason box to withdraw or deposit (either do a type in or a dropbox with list of options
+    //TODO: add transactions history to the side & a reason box to withdraw or deposit (either do a type in or a dropbox with list of options
     // Possibly allow a note with it of 20 characters or so ex(Bills Note: Electric, etc) this way you can be able to filter through the transaction histroy
 
     private void updateLabels() {
@@ -69,7 +75,10 @@ public class CheckingPane extends BorderPane {
         checkingLabel.setText("Checking: $" + user.getCheckingAccount().getBalance());
     }
     
-    //TODO: set on aciton event for deposit and withdraw
-    
-
 }
+    
+    //TODO: set on action event for deposit and withdraw
+
+
+
+
