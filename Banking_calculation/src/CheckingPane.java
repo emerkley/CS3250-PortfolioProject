@@ -1,5 +1,8 @@
 import javafx.geometry.Pos;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
@@ -9,7 +12,7 @@ import javafx.scene.layout.VBox;
 public class CheckingPane extends BorderPane {
     private Label checkingLabel;
     private UserSelection userSelection;
-    User user = userSelection.getSelectedUser();
+
 
     public CheckingPane(BankAppPane app, User selectedUser) {
         this.userSelection = new UserSelection(selectedUser);
@@ -59,12 +62,55 @@ public class CheckingPane extends BorderPane {
 
         backBtn.setOnAction(e -> app.UserAcctScene(selectedUser));
         
-        depositBtn.setOnAction(e -> {
-            double amount = Double.parseDouble(amountField.getText());
-            TransactionManager.deposit(user.getCheckingAccount(), amount);
-            updateLabels();
-        });
+        //Withdraw logic
+        withdrawBtn.setOnAction(e -> {
+            try {
+                double amount = Double.parseDouble(amountField.getText());
 
+                boolean success = TransactionManager.withdraw(
+                        userSelection.getSelectedUser().getCheckingAccount(),
+                        amount
+                );
+                // You can't withdraw move than you have
+                if (!success) {
+                    Alert alert = new Alert(AlertType.NONE);
+                    alert.setTitle("Withdrawal Error");
+                    alert.setContentText("You do not have enough money in your account to withdraw $" + amount);
+                    alert.getButtonTypes().setAll(ButtonType.OK);
+                    alert.showAndWait();
+                } else {
+                    updateLabels();
+                }
+
+                amountField.clear();
+                // Only take Numbers
+            } catch (NumberFormatException ex) {
+                Alert alert = new Alert(AlertType.NONE);
+                alert.setTitle("Invalid Input");
+                alert.setContentText("Please enter a valid numeric amount.");
+                alert.getButtonTypes().setAll(ButtonType.OK);
+                alert.showAndWait();
+
+                amountField.clear();
+            }
+        });
+        
+        depositBtn.setOnAction(e -> {
+        	try {
+	            double amount = Double.parseDouble(amountField.getText());
+	            TransactionManager.deposit(userSelection.getSelectedUser().getCheckingAccount(), amount);
+	            updateLabels();
+        	} catch (NumberFormatException ex) {
+                Alert alert = new Alert(AlertType.NONE);
+                alert.setTitle("Invalid Input");
+                alert.setContentText("Please enter a valid numeric amount.");
+                alert.getButtonTypes().setAll(ButtonType.OK);
+                alert.showAndWait();
+
+                amountField.clear();
+        		
+        	}
+        });
     }
     
     //TODO: add transactions history to the side & a reason box to withdraw or deposit (either do a type in or a dropbox with list of options
@@ -76,8 +122,7 @@ public class CheckingPane extends BorderPane {
     }
     
 }
-    
-    //TODO: set on action event for deposit and withdraw
+   
 
 
 
