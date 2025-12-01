@@ -172,7 +172,7 @@ public class GoalsPane extends BorderPane {
         costDialog.setHeaderText("Enter the cost of your goal:");
         String costStr = costDialog.showAndWait().orElse(null);
         if (costStr == null) return;
-
+ 
         try {
             double cost = Double.parseDouble(costStr);
             goalAcc.setGoal(goalName, cost);
@@ -180,8 +180,9 @@ public class GoalsPane extends BorderPane {
         } catch (NumberFormatException e) {
             showError("Invalid Cost", "Please enter a valid number.");
         }
-    }
+	    }
 
+    // Update what the current goal is
     private void updateLabels() {
         GoalSaving acc = userSelection.getSelectedUser().getGoalAccount();
 
@@ -197,8 +198,8 @@ public class GoalsPane extends BorderPane {
 
         progressLabel.setText("Progress: " + acc.getProgress() + "%");
 
-        // ++ Check for completion
-        if (acc.getBalance() >= acc.getGoalCost()) {
+        // Check for completion
+        if (acc.isComplete()) {
             goalCompleteLabel.setText("Goal Completed! You can now purchase your " + acc.getGoalName());
         } else {
             goalCompleteLabel.setText(""); // hide if not completed

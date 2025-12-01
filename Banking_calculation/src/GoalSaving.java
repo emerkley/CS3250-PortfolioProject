@@ -1,18 +1,16 @@
 
 public class GoalSaving extends Account {
 	private String goalName;
-	private double goalCost;
-	private double balance;     
+	private double goalCost;   
 	
 	public GoalSaving() {
 		super("Goal");
         this.goalCost = 0;
-        this.balance = 0;
+        this.goalName = null;
 	}
 	public void setGoal(String name, double goalAmount) {
-		this.goalName = name;
-		this.goalCost = goalAmount;
-		this.balance = 0;
+	    this.goalName = name;
+	    this.goalCost = goalAmount;
 	}
 	
     public String getGoalName() {
@@ -24,7 +22,7 @@ public class GoalSaving extends Account {
     }
     
     public double getBalance() {
-        return balance;
+    	return super.getBalance();
     }
     
 	public double getProgress() {

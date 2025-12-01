@@ -1,0 +1,9 @@
+
+CREATE TABLE users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT, 
+    username TEXT NOT NULL,
+    age INTEGER NOT NULL,
+    savings REAL DEFAULT 0.0,
+    checking REAL DEFAULT 0.0,
+    goals REAL DEFAULT 0.0
+);

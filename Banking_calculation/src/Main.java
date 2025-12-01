@@ -6,7 +6,7 @@ public class Main {
         User u2 = new User("James", 17);
 
         u1.getGoalAccount().setGoal("Jet Ski", 1150);
-        u2.getGoalAccount().setGoal("Vacation", 2000);
+        u2.getGoalAccount().setGoal("Microsoft", 2000);
         
         u1.getCheckingAccount().deposit(1500);
         u1.getGoalAccount().deposit(200);
@@ -29,11 +29,3 @@ public class Main {
         System.out.println();
     }
 }
-
-
-// TODO
-/* Make a database for it to keep track of (Names of people and accounts, Transactions, goals)
- * deposit and withdrawl
- * show data on devices.
- *
- * */

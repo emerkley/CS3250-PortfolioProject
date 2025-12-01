@@ -16,7 +16,7 @@ public class User {
 		this.userAccountNum = ++accountNumber;
 		this.checkingAccount = new CheckingAcct();
 		this.savingsAccount = new SavingsAcct();
-		this.setGoalAccount(new GoalSaving());
+		this.goalAccount = new GoalSaving();
 		
 	 } 
 	
