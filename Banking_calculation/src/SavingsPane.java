@@ -38,6 +38,7 @@ public class SavingsPane extends BorderPane {
         HBox amountBox = new HBox(10, amountLabel, amountField);
         amountBox.setAlignment(Pos.CENTER_LEFT);
 
+        // Transaction buttons
         Button depositBtn = new Button("Deposit");
         Button withdrawBtn = new Button("Withdraw");
 
@@ -62,29 +63,25 @@ public class SavingsPane extends BorderPane {
         withdrawBtn.setOnAction(e -> {
             try {
                 double amount = Double.parseDouble(amountField.getText());
+                Account savings = userSelection.getSelectedUser().getSavingsAccount();
 
-                boolean success = TransactionManager.withdraw(
-                        userSelection.getSelectedUser().getSavingsAccount(),
-                        amount
-                );
+                boolean success = TransactionManager.withdraw(savings, amount);
 
                 if (!success) {
-                    Alert alert = new Alert(AlertType.NONE);
-                    alert.setTitle("Withdrawal Error");
-                    alert.setContentText("You do not have enough money to withdraw $" + amount);
-                    alert.getButtonTypes().setAll(ButtonType.OK);
-                    alert.showAndWait();
+                    showError("Withdrawal Error", "You do not have enough money to withdraw $" + amount);
                 } else {
                     updateLabels();
+                    app.getDatabase().updateBalance(
+                        savings.getId(),
+                        savings.getBalance(),
+                        savings.getAccountType()
+                    ); 
                 }
 
                 amountField.clear();
+
             } catch (NumberFormatException ex) {
-                Alert alert = new Alert(AlertType.NONE);
-                alert.setTitle("Invalid Input");
-                alert.setContentText("Please enter a valid numeric amount.");
-                alert.getButtonTypes().setAll(ButtonType.OK);
-                alert.showAndWait();
+                showError("Invalid Input", "Please enter a valid numeric amount.");
                 amountField.clear();
             }
         });
@@ -93,36 +90,40 @@ public class SavingsPane extends BorderPane {
         depositBtn.setOnAction(e -> {
             try {
                 double amount = Double.parseDouble(amountField.getText());
+                Account savings = userSelection.getSelectedUser().getSavingsAccount();
 
-                boolean success = TransactionManager.deposit(
-                        userSelection.getSelectedUser().getSavingsAccount(),
-                        amount
-                );
+                boolean success = TransactionManager.deposit(savings, amount);
 
                 if (!success) {
-                    Alert alert = new Alert(AlertType.NONE);
-                    alert.setTitle("Deposit Error");
-                    alert.setContentText("Please enter an amount greater than 0.");
-                    alert.getButtonTypes().setAll(ButtonType.OK);
-                    alert.showAndWait();
+                    showError("Deposit Error", "Please enter an amount greater than 0.");
                 } else {
                     updateLabels();
+                    app.getDatabase().updateBalance(
+                        savings.getId(),
+                        savings.getBalance(),
+                        savings.getAccountType()
+                    );
                 }
 
                 amountField.clear();
+
             } catch (NumberFormatException ex) {
-                Alert alert = new Alert(AlertType.NONE);
-                alert.setTitle("Invalid Input");
-                alert.setContentText("Please enter a valid numeric amount.");
-                alert.getButtonTypes().setAll(ButtonType.OK);
-                alert.showAndWait();
+                showError("Invalid Input", "Please enter a valid amount.");
                 amountField.clear();
             }
         });
     }
-
     private void updateLabels() {
         User user = userSelection.getSelectedUser();
         savingsLabel.setText("Savings: $" + user.getSavingsAccount().getBalance());
+    }
+    
+    // ChatGPT suggested to put all alerts below and call to them 
+    private void showError(String title, String message) {
+        Alert alert = new Alert(AlertType.NONE);
+        alert.setTitle(title);
+        alert.setContentText(message);
+        alert.getButtonTypes().setAll(ButtonType.OK);
+        alert.showAndWait();
     }
 }

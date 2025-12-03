@@ -17,7 +17,6 @@ public class User {
 		this.checkingAccount = new CheckingAcct();
 		this.savingsAccount = new SavingsAcct();
 		this.goalAccount = new GoalSaving();
-		
 	 } 
 	
     public void createCheckingAccount() {

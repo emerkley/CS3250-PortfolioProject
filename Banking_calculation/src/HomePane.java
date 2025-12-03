@@ -48,10 +48,8 @@ public class HomePane extends BorderPane {
             try {
             	int age = Integer.parseInt(ageText);
                 User newUser = new User(name, age);
-                newUser.getCheckingAccount().deposit(100);
-                newUser.getSavingsAccount().deposit(50);
-                newUser.getGoalAccount().setGoal("Vacation", 500);
-                newUser.getGoalAccount().deposit(25);
+                
+                BankDatabase.getDatabase().addUser(newUser);
 
                 users.add(newUser);
                 statusLabel.setText("User: " + name + " Age:" + age + " created!");

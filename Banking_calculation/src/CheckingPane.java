@@ -34,11 +34,8 @@ public class CheckingPane extends BorderPane {
 
         // Amount for trasnsacitons box
         Label amountLabel = new Label("Amount:");
-        amountLabel.setStyle("-fx-font-size: 14px;");
         TextField amountField = new TextField();
-        amountField.setPromptText("Type money amount here");
-        amountField.setPrefWidth(100);
-
+        amountField.setPromptText("Enter amount");
         HBox amountBox = new HBox(10, amountLabel, amountField);
         amountBox.setAlignment(Pos.CENTER_LEFT);
 
@@ -66,59 +63,66 @@ public class CheckingPane extends BorderPane {
         withdrawBtn.setOnAction(e -> {
             try {
                 double amount = Double.parseDouble(amountField.getText());
+                Account checking = userSelection.getSelectedUser().getCheckingAccount();
 
-                boolean success = TransactionManager.withdraw(
-                        userSelection.getSelectedUser().getCheckingAccount(),
-                        amount
-                );
-                // You can't withdraw move than you have
+                boolean success = TransactionManager.withdraw(checking, amount);
+
                 if (!success) {
-                    Alert alert = new Alert(AlertType.NONE);
-                    alert.setTitle("Withdrawal Error");
-                    alert.setContentText("You do not have enough money in your account to withdraw $" + amount);
-                    alert.getButtonTypes().setAll(ButtonType.OK);
-                    alert.showAndWait();
+                    showAlert("Withdrawal Error", "You do not have enough money to withdraw $" + amount);
                 } else {
                     updateLabels();
+                    BankDatabase.getDatabase().updateBalance(
+                        checking.getAccountId(),
+                        checking.getBalance(),
+                        checking.getAccountType()
+                    );
                 }
 
                 amountField.clear();
-                // Only take Numbers
             } catch (NumberFormatException ex) {
-                Alert alert = new Alert(AlertType.NONE);
-                alert.setTitle("Invalid Input");
-                alert.setContentText("Please enter a valid numeric amount.");
-                alert.getButtonTypes().setAll(ButtonType.OK);
-                alert.showAndWait();
-
+                showAlert("Invalid Input", "Please enter a valid numeric amount.");
                 amountField.clear();
             }
         });
         
+        // Deposit logic
         depositBtn.setOnAction(e -> {
-        	try {
-	            double amount = Double.parseDouble(amountField.getText());
-	            TransactionManager.deposit(userSelection.getSelectedUser().getCheckingAccount(), amount);
-	            updateLabels();
-        	} catch (NumberFormatException ex) {
-                Alert alert = new Alert(AlertType.NONE);
-                alert.setTitle("Invalid Input");
-                alert.setContentText("Please enter a valid numeric amount.");
-                alert.getButtonTypes().setAll(ButtonType.OK);
-                alert.showAndWait();
+            try {
+                double amount = Double.parseDouble(amountField.getText());
+                Account checking = userSelection.getSelectedUser().getCheckingAccount();
+
+                boolean success = TransactionManager.deposit(checking, amount);
+
+                if (!success) {
+                    showAlert("Deposit Error", "Please enter an amount greater than 0.");
+                } else {
+                    updateLabels();
+                    BankDatabase.getDatabase().updateBalance(
+                        checking.getAccountId(),
+                        checking.getBalance(),
+                        checking.getAccountType()
+                    );
+                }
 
                 amountField.clear();
-        		
-        	}
+            } catch (NumberFormatException ex) {
+                showAlert("Invalid Input", "Please enter a valid numeric amount.");
+                amountField.clear();
+            }
         });
     }
     
-    //TODO: add transactions history to the side & a reason box to withdraw or deposit (either do a type in or a dropbox with list of options
-    // Possibly allow a note with it of 20 characters or so ex(Bills Note: Electric, etc) this way you can be able to filter through the transaction histroy
-
     private void updateLabels() {
         User user = userSelection.getSelectedUser();
         checkingLabel.setText("Checking: $" + user.getCheckingAccount().getBalance());
+    }
+
+    private void showAlert(String title, String message) {
+        Alert alert = new Alert(AlertType.NONE);
+        alert.setTitle(title);
+        alert.setContentText(message);
+        alert.getButtonTypes().setAll(ButtonType.OK);
+        alert.showAndWait();
     }
     
 }

@@ -7,8 +7,11 @@ import javafx.collections.ObservableList;
 public class BankAppPane extends Application {
     private Stage primaryStage;
     private ObservableList<User> users;
-    private BankDatabase database = new BankDatabase();
+    private BankDatabase database = BankDatabase.getDatabase();
     
+    public BankDatabase getDatabase() {
+        return database;
+    }
     
     public static void main(String[] args) {
         launch(args);
@@ -64,6 +67,7 @@ public class BankAppPane extends Application {
         Scene goalsScene = new Scene(goalsPane, 600, 500);
         primaryStage.setScene(goalsScene);
     }
+    
     
 
 }

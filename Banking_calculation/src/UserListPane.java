@@ -47,8 +47,10 @@ public class UserListPane extends BorderPane {
         	        Optional<ButtonType> result = confirm.showAndWait();
         	        if (result.isPresent() && result.get() == ButtonType.OK) {
         	            userList.getItems().remove(selectedUser);
+        	            BankDatabase.getDatabase().deleteUser(selectedUser);
         	        }
         	    }
+        	 
         });
 
         VBox rightBox = new VBox(10, title, userList, viewUserBtn, deleteUserBtn, backBtn);

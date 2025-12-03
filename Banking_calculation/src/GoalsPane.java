@@ -78,31 +78,21 @@ public class GoalsPane extends BorderPane {
         withdrawBtn.setOnAction(e -> {
             try {
                 double amount = Double.parseDouble(amountField.getText());
+                GoalSaving acc = userSelection.getSelectedUser().getGoalAccount();
 
-                boolean success = TransactionManager.withdraw(
-                        userSelection.getSelectedUser().getGoalAccount(),
-                        amount
-                );
+                boolean success = TransactionManager.withdraw(acc, amount);
 
                 if (!success) {
-                    Alert alert = new Alert(Alert.AlertType.NONE);
-                    alert.setTitle("Withdrawal Error");
-                    alert.setContentText("You do not have enough money to withdraw $" + amount);
-                    alert.getButtonTypes().setAll(ButtonType.OK);
-                    alert.showAndWait();
+                    showAlert("Withdrawal Error", "You do not have enough money to withdraw $" + amount);
                 } else {
                     updateLabels();
+                    BankDatabase.getDatabase().updateBalance(acc.getAccountId(), acc.getBalance(), acc.getAccountType());
                 }
 
                 amountField.clear();
 
             } catch (NumberFormatException ex) {
-                Alert alert = new Alert(Alert.AlertType.NONE);
-                alert.setTitle("Invalid Input");
-                alert.setContentText("Please enter a valid numeric amount.");
-                alert.getButtonTypes().setAll(ButtonType.OK);
-                alert.showAndWait();
-
+                showAlert("Invalid Input", "Please enter a valid numeric amount.");
                 amountField.clear();
             }
         });
@@ -111,31 +101,22 @@ public class GoalsPane extends BorderPane {
         depositBtn.setOnAction(e -> {
             try {
                 double amount = Double.parseDouble(amountField.getText());
+                GoalSaving acc = userSelection.getSelectedUser().getGoalAccount();
 
-                boolean success = TransactionManager.deposit(
-                        userSelection.getSelectedUser().getGoalAccount(),
-                        amount
-                );
+                boolean success = TransactionManager.deposit(acc, amount);
 
                 if (!success) {
-                    Alert alert = new Alert(Alert.AlertType.NONE);
-                    alert.setTitle("Deposit Error");
-                    alert.setContentText("Please enter an amount greater than 0.");
-                    alert.getButtonTypes().setAll(ButtonType.OK);
-                    alert.showAndWait();
+                    showAlert("Deposit Error", "Please enter an amount greater than 0.");
                 } else {
                     updateLabels();
+                    // Update database
+                    BankDatabase.getDatabase().updateBalance(acc.getAccountId(), acc.getBalance(), acc.getAccountType());
                 }
 
                 amountField.clear();
 
             } catch (NumberFormatException ex) {
-                Alert alert = new Alert(Alert.AlertType.NONE);
-                alert.setTitle("Invalid Input");
-                alert.setContentText("Please enter a valid numeric amount.");
-                alert.getButtonTypes().setAll(ButtonType.OK);
-                alert.showAndWait();
-
+                showAlert("Invalid Input", "Please enter a valid numeric amount.");
                 amountField.clear();
             }
         });
@@ -143,24 +124,19 @@ public class GoalsPane extends BorderPane {
     
     // If there is already a goal
     private void handleGoalCreation(GoalSaving goalAcc) {
-    	// Asked chat to help me with confirmation alert
         if (goalAcc.getGoalName() != null) {
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
             alert.setTitle("Goal Already Set!");
             alert.setHeaderText("You are currently working toward: " + goalAcc.getGoalName());
             alert.setContentText("Would you like to change goals?");
-
             ButtonType yes = new ButtonType("Yes");
             ButtonType no = new ButtonType("No");
-
             alert.getButtonTypes().setAll(yes, no);
 
             var result = alert.showAndWait();
-            if (result.get() == no)
-                return;
+            if (result.get() == no) return;
         }
 
-        // get new goal name and cost of it
         TextInputDialog nameDialog = new TextInputDialog();
         nameDialog.setTitle("New Goal");
         nameDialog.setHeaderText("Enter the name of your new goal:");
@@ -172,15 +148,17 @@ public class GoalsPane extends BorderPane {
         costDialog.setHeaderText("Enter the cost of your goal:");
         String costStr = costDialog.showAndWait().orElse(null);
         if (costStr == null) return;
- 
+
         try {
             double cost = Double.parseDouble(costStr);
             goalAcc.setGoal(goalName, cost);
             updateLabels();
+        //  TODO: Save goal entry to DB
+            BankDatabase.getDatabase().updateBalance(goalAcc.getAccountId(), goalAcc.getBalance(), goalAcc.getAccountType());
         } catch (NumberFormatException e) {
             showError("Invalid Cost", "Please enter a valid number.");
         }
-	    }
+    } 
 
     // Update what the current goal is
     private void updateLabels() {
@@ -204,6 +182,14 @@ public class GoalsPane extends BorderPane {
         } else {
             goalCompleteLabel.setText(""); // hide if not completed
         }
+    }
+
+    private void showAlert(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.NONE);
+        alert.setTitle(title);
+        alert.setContentText(message);
+        alert.getButtonTypes().setAll(ButtonType.OK);
+        alert.showAndWait();
     }
 
     private void showError(String title, String msg) {

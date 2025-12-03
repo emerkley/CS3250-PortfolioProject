@@ -14,7 +14,7 @@ public class Account {
 	
 	public Account(String accountType, double balance) {
 		this.accountId = ++nextAccountId;
-		this.balance = 0;
+		this.balance = balance;
 		this.accountType = accountType;
 	}
 	
@@ -34,6 +34,10 @@ public class Account {
 		else {
 			System.out.println("You can't withdraw a negative amount or take out insufficient funds");
 		}
+	}
+	
+	public int getId() {
+	    return accountId;
 	}
 
 	public double getBalance() {
