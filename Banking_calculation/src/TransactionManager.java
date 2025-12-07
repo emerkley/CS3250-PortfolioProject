@@ -13,7 +13,7 @@ public class TransactionManager {
         BankDatabase.getDatabase().updateBalance(account.getAccountId(), account.getBalance(), account.getAccountType());
         return true;
     }
-
+/*
     public static boolean transfer(Account from, Account to, double amount) {
         if (withdraw(from, amount)) {
             deposit(to, amount);
@@ -21,4 +21,5 @@ public class TransactionManager {
         }
         return false;
     }
+    */
 }

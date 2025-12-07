@@ -5,6 +5,7 @@ public class User {
 	private int userAccountNum;
 	private int age;
 	private static int accountNumber = 10000;
+	private int dbId;
 	
 	 private CheckingAcct checkingAccount;
 	 private SavingsAcct savingsAccount;
@@ -40,6 +41,8 @@ public class User {
 	public int getUserAccountNum() {return userAccountNum;}
 	public void setUserAccountNum(int userAccountNum) 
 	{this.userAccountNum = userAccountNum;}
+    public int getDbId() { return dbId; }
+    public void setDbId(int dbId) { this.dbId = dbId; }
 
 
 	

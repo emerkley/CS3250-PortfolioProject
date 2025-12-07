@@ -1,8 +1,14 @@
+import java.time.LocalDateTime;
+import java.util.List;
+
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.BorderPane;
@@ -14,6 +20,8 @@ public class GoalsPane extends BorderPane {
     private Label progressLabel;     
     private Label goalCompleteLabel;  
     private UserSelection userSelection;
+    private ObservableList<TransactionRecord> transactionList;
+    private ListView<TransactionRecord> transactionListView;
 
     public GoalsPane(BankAppPane app, User selectedUser) {
         this.userSelection = new UserSelection(selectedUser);
@@ -29,41 +37,45 @@ public class GoalsPane extends BorderPane {
         progressLabel = new Label("Progress: 0%");
         goalCompleteLabel = new Label();     
         updateLabels();
-
-        VBox infoBox = new VBox(10, goalsLabel, progressLabel, goalCompleteLabel);
-        infoBox.setAlignment(Pos.TOP_CENTER);
-        infoBox.setStyle("-fx-padding: 20;");
-        setLeft(infoBox);
         
         Button createGoalBtn = new Button("Create/Change Goal");  
         createGoalBtn.setOnAction(e -> handleGoalCreation(
                 userSelection.getSelectedUser().getGoalAccount()
         ));
         
-        VBox leftBox = new VBox(15, infoBox, createGoalBtn);
-        leftBox.setAlignment(Pos.TOP_CENTER);
-        leftBox.setStyle("-fx-padding: 20;");
-        setLeft(leftBox);
-
-        // Amount input
         Label amountLabel = new Label("Amount:");
         TextField amountField = new TextField();
         amountField.setPromptText("Enter amount");
-
-        HBox amountBox = new HBox(10, amountLabel, amountField);
-        amountBox.setAlignment(Pos.CENTER_LEFT);
-
-        // Buttons
+        
+        Label descLabel = new Label("Reason:");
+        TextField descField = new TextField();
+        descField.setPromptText("Max 20 chars");
+        
         Button depositBtn = new Button("Deposit");
         Button withdrawBtn = new Button("Withdraw");
-
         HBox buttonBox = new HBox(10, depositBtn, withdrawBtn);
-        buttonBox.setAlignment(Pos.CENTER_LEFT);
+        buttonBox.setAlignment(Pos.TOP_LEFT);
 
-        VBox centerBox = new VBox(15, amountBox, buttonBox);
-        centerBox.setAlignment(Pos.CENTER_LEFT);
-        centerBox.setStyle("-fx-padding: 20;");
-        setCenter(centerBox);
+        VBox leftColumn = new VBox(10, goalsLabel, progressLabel, createGoalBtn, descLabel, descField,
+                amountLabel, amountField, buttonBox);
+        leftColumn.setAlignment(Pos.TOP_LEFT);
+        leftColumn.setStyle("-fx-padding: 15;");
+        
+        transactionList = FXCollections.observableArrayList();
+        transactionListView = new ListView<>(transactionList);
+        transactionListView.setPrefWidth(300);
+        transactionListView.setPrefHeight(400);
+        loadTransactions(selectedUser.getGoalAccount().getAccountId());
+
+        VBox rightColumn = new VBox(transactionListView);
+        rightColumn.setAlignment(Pos.TOP_CENTER);
+        rightColumn.setStyle("-fx-padding: 0;");
+        
+        HBox centerColumns = new HBox(40, leftColumn, rightColumn);
+        centerColumns.setAlignment(Pos.TOP_CENTER);
+        centerColumns.setStyle("-fx-padding: 20;");
+
+        setCenter(centerColumns);
 
         // Back button
         Button backBtn = new Button("Back");
@@ -71,7 +83,6 @@ public class GoalsPane extends BorderPane {
         bottomBox.setAlignment(Pos.CENTER);
         bottomBox.setStyle("-fx-padding: 10;");
         setBottom(bottomBox);
-
         backBtn.setOnAction(e -> app.UserAcctScene(selectedUser));
 
         // Withdraw logic
@@ -87,13 +98,22 @@ public class GoalsPane extends BorderPane {
                 } else {
                     updateLabels();
                     BankDatabase.getDatabase().updateBalance(acc.getAccountId(), acc.getBalance(), acc.getAccountType());
+
+                    TransactionRecord tr = new TransactionRecord(
+                            amount * -1,
+                            descField.getText(),
+                            LocalDateTime.now(),
+                            "Goal",
+                            "Withdraw"
+                    );
+
+                    addTransaction(tr, acc.getAccountId());
                 }
 
                 amountField.clear();
-
+                descField.clear();
             } catch (NumberFormatException ex) {
                 showAlert("Invalid Input", "Please enter a valid numeric amount.");
-                amountField.clear();
             }
         });
 
@@ -109,20 +129,44 @@ public class GoalsPane extends BorderPane {
                     showAlert("Deposit Error", "Please enter an amount greater than 0.");
                 } else {
                     updateLabels();
-                    // Update database
                     BankDatabase.getDatabase().updateBalance(acc.getAccountId(), acc.getBalance(), acc.getAccountType());
+
+                    TransactionRecord tr = new TransactionRecord(
+                            amount,
+                            descField.getText(),
+                            LocalDateTime.now(),
+                            "Goal",
+                            "Deposit"
+                    );
+
+                    addTransaction(tr, acc.getAccountId());
                 }
 
                 amountField.clear();
-
+                descField.clear();
             } catch (NumberFormatException ex) {
                 showAlert("Invalid Input", "Please enter a valid numeric amount.");
-                amountField.clear();
             }
         });
     }
     
-    // If there is already a goal
+    private void addTransaction(TransactionRecord tr, int userId) {
+        transactionList.add(tr);
+        BankDatabase.getDatabase().insertTransaction(userId, tr);
+    }
+
+    private void loadTransactions(int userId) {
+        List<TransactionRecord> records = BankDatabase.getDatabase().getTransactions(userId);
+        transactionList.setAll(records);
+    }
+    public void setSelectedUser(User newUser) {
+        userSelection.setSelectedUser(newUser);
+        GoalSaving acc = newUser.getGoalAccount();
+        loadTransactions(acc.getAccountId());   
+        updateLabels();                  
+    }
+    
+    // If there is already a goal (asked chatGPT to help load goal and update goals to and from DB)
     private void handleGoalCreation(GoalSaving goalAcc) {
         if (goalAcc.getGoalName() != null) {
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -153,8 +197,11 @@ public class GoalsPane extends BorderPane {
             double cost = Double.parseDouble(costStr);
             goalAcc.setGoal(goalName, cost);
             updateLabels();
-        //  TODO: Save goal entry to DB
+            // Save goal name and cost to DB
+            BankDatabase.getDatabase().updateGoalInfo(goalAcc.getAccountId(), goalName, cost);
+            // Also save current saved amount toward the goal
             BankDatabase.getDatabase().updateBalance(goalAcc.getAccountId(), goalAcc.getBalance(), goalAcc.getAccountType());
+
         } catch (NumberFormatException e) {
             showError("Invalid Cost", "Please enter a valid number.");
         }
@@ -174,7 +221,7 @@ public class GoalsPane extends BorderPane {
         goalsLabel.setText("Goal: " + acc.getGoalName() + 
             "\nSaved: $" + acc.getBalance() + " / $" + acc.getGoalCost());
 
-        progressLabel.setText("Progress: " + acc.getProgress() + "%");
+        progressLabel.setText("Progress: " + String.format("%.2f", acc.getProgress()) + "%");
 
         // Check for completion
         if (acc.isComplete()) {
@@ -200,3 +247,5 @@ public class GoalsPane extends BorderPane {
         a.showAndWait();
     }
 }
+
+

@@ -1,9 +1,14 @@
+import java.time.LocalDateTime;
+import java.util.List;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -12,6 +17,8 @@ import javafx.scene.layout.VBox;
 public class CheckingPane extends BorderPane {
     private Label checkingLabel;
     private UserSelection userSelection;
+    private ListView<TransactionRecord> transactionListView;
+    private ObservableList<TransactionRecord> transactionList;
 
 
     public CheckingPane(BankAppPane app, User selectedUser) {
@@ -24,7 +31,6 @@ public class CheckingPane extends BorderPane {
 
         // Account info on the left
         checkingLabel = new Label();
-        checkingLabel.setStyle("-fx-font-size: 14px;");
         updateLabels();
 
         VBox infoBox = new VBox(10, checkingLabel);
@@ -36,8 +42,10 @@ public class CheckingPane extends BorderPane {
         Label amountLabel = new Label("Amount:");
         TextField amountField = new TextField();
         amountField.setPromptText("Enter amount");
-        HBox amountBox = new HBox(10, amountLabel, amountField);
-        amountBox.setAlignment(Pos.CENTER_LEFT);
+        
+        Label descLabel = new Label("Reason:");
+        TextField descField = new TextField();
+        descField.setPromptText("Max 20 chars");
 
         // deposit & withdraw buttons
         Button depositBtn = new Button("Deposit");
@@ -46,10 +54,16 @@ public class CheckingPane extends BorderPane {
         HBox buttonBox = new HBox(10, depositBtn, withdrawBtn);
         buttonBox.setAlignment(Pos.CENTER_LEFT);
 
-        VBox centerBox = new VBox(15, amountBox, buttonBox);
-        centerBox.setAlignment(Pos.CENTER_LEFT);
-        centerBox.setStyle("-fx-padding: 20;");
-        setCenter(centerBox);
+        VBox leftBox = new VBox(10, checkingLabel, amountLabel, amountField, descLabel, descField, buttonBox);
+        leftBox.setAlignment(Pos.TOP_LEFT);
+        leftBox.setStyle("-fx-padding: 20;");
+        setLeft(leftBox);
+        
+        transactionList = FXCollections.observableArrayList();
+        transactionListView = new ListView<>(transactionList);
+        transactionListView.setPrefHeight(400);
+        setCenter(transactionListView);
+        loadTransactions(selectedUser.getCheckingAccount().getAccountId());// Load DB transactions
 
         Button backBtn = new Button("Back");
         HBox bottomBox = new HBox(backBtn);
@@ -72,13 +86,24 @@ public class CheckingPane extends BorderPane {
                 } else {
                     updateLabels();
                     BankDatabase.getDatabase().updateBalance(
-                        checking.getAccountId(),
-                        checking.getBalance(),
-                        checking.getAccountType()
+                            checking.getAccountId(),
+                            checking.getBalance(),
+                            checking.getAccountType()
                     );
+
+                    TransactionRecord tr = new TransactionRecord(
+                    	    amount * -1,
+                    	    descField.getText(),
+                    	    LocalDateTime.now(),
+                    	    "Checking", 
+                    	    "Withdraw"
+                    	);
+                    addTransaction(tr, checking.getAccountId());
                 }
 
                 amountField.clear();
+                descField.clear();
+
             } catch (NumberFormatException ex) {
                 showAlert("Invalid Input", "Please enter a valid numeric amount.");
                 amountField.clear();
@@ -98,15 +123,26 @@ public class CheckingPane extends BorderPane {
                 } else {
                     updateLabels();
                     BankDatabase.getDatabase().updateBalance(
-                        checking.getAccountId(),
-                        checking.getBalance(),
-                        checking.getAccountType()
+                            checking.getAccountId(),
+                            checking.getBalance(),
+                            checking.getAccountType()
                     );
+
+                    TransactionRecord tr = new TransactionRecord(
+                    	    amount,
+                    	    descField.getText(),
+                    	    LocalDateTime.now(),
+                    	    "Checking", 
+                    	    "Deposit"
+                    	);
+                    addTransaction(tr, checking.getAccountId());
                 }
 
                 amountField.clear();
+                descField.clear();
+
             } catch (NumberFormatException ex) {
-                showAlert("Invalid Input", "Please enter a valid numeric amount.");
+                showAlert("Invalid Input", "Please enter a valid amount.");
                 amountField.clear();
             }
         });
@@ -124,10 +160,16 @@ public class CheckingPane extends BorderPane {
         alert.getButtonTypes().setAll(ButtonType.OK);
         alert.showAndWait();
     }
-    
-}
-   
+    private void addTransaction(TransactionRecord tr, int userId) {
+        transactionList.add(tr);
+        BankDatabase.getDatabase().insertTransaction(userId, tr);
+    }
 
+    private void loadTransactions(int userId) {
+        List<TransactionRecord> records = BankDatabase.getDatabase().getTransactions(userId);
+        transactionList.setAll(records);
+    }
+}
 
 
 

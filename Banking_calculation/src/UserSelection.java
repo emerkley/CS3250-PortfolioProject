@@ -10,6 +10,10 @@ public class UserSelection {
         return selectedUser;
     }
     
+    public void setSelectedUser(User newUser) { 
+    	this.selectedUser = newUser; 
+    }
+    
     public String getUserSummary() {
         return "User: " + selectedUser.getName() +
                "\nChecking: $" + selectedUser.getCheckingAccount().getBalance() +

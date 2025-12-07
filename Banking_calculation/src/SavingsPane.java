@@ -1,17 +1,26 @@
+import javafx.collections.ObservableList;
 import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
+import javafx.collections.FXCollections;
+
 public class SavingsPane extends BorderPane {
     private Label savingsLabel;
     private UserSelection userSelection;
+    private ListView<TransactionRecord> transactionListView; 
+    private ObservableList<TransactionRecord> transactionList;
 
     public SavingsPane(BankAppPane app, User selectedUser) {
         this.userSelection = new UserSelection(selectedUser);
@@ -30,25 +39,33 @@ public class SavingsPane extends BorderPane {
         infoBox.setStyle("-fx-padding: 20;");
         setLeft(infoBox);
 
-        // Amount for trasnsacitons box
+        // Amount for transactions
         Label amountLabel = new Label("Amount:");
         TextField amountField = new TextField();
         amountField.setPromptText("Enter amount");
-
-        HBox amountBox = new HBox(10, amountLabel, amountField);
-        amountBox.setAlignment(Pos.CENTER_LEFT);
+        
+        // Take description for transaction
+        Label descLabel = new Label("Reason:");
+        TextField descField = new TextField();
+        descField.setPromptText("Max 20 chars");
 
         // Transaction buttons
         Button depositBtn = new Button("Deposit");
         Button withdrawBtn = new Button("Withdraw");
-
         HBox buttonBox = new HBox(10, depositBtn, withdrawBtn);
         buttonBox.setAlignment(Pos.CENTER_LEFT);
 
-        VBox centerBox = new VBox(15, amountBox, buttonBox);
-        centerBox.setAlignment(Pos.CENTER_LEFT);
-        centerBox.setStyle("-fx-padding: 20;");
-        setCenter(centerBox);
+        VBox leftBox = new VBox(10, savingsLabel, amountLabel, amountField, descLabel, descField, buttonBox);
+        leftBox.setAlignment(Pos.TOP_LEFT);
+        leftBox.setStyle("-fx-padding: 20;");
+        setLeft(leftBox);
+        
+        // Transaction list using ListView
+        transactionList = FXCollections.observableArrayList();
+        transactionListView = new ListView<>(transactionList);
+        transactionListView.setPrefHeight(400);
+        setCenter(transactionListView);
+        loadTransactions(selectedUser.getSavingsAccount().getAccountId());// Load DB transactions
 
         // Back button
         Button backBtn = new Button("Back");
@@ -56,7 +73,6 @@ public class SavingsPane extends BorderPane {
         bottomBox.setAlignment(Pos.CENTER);
         bottomBox.setStyle("-fx-padding: 10;");
         setBottom(bottomBox);
-
         backBtn.setOnAction(e -> app.UserAcctScene(selectedUser));
 
         // Withdraw logic
@@ -72,13 +88,22 @@ public class SavingsPane extends BorderPane {
                 } else {
                     updateLabels();
                     app.getDatabase().updateBalance(
-                        savings.getId(),
-                        savings.getBalance(),
-                        savings.getAccountType()
-                    ); 
+                        savings.getId(), savings.getBalance(), savings.getAccountType()
+                    );
+
+                    // Save transaction
+                    TransactionRecord tr = new TransactionRecord(
+                    	    amount * -1,
+                    	    descField.getText(),
+                    	    LocalDateTime.now(),
+                    	    "Savings",
+                    	    "Withdraw"
+                    	);
+                    addTransaction(tr, savings.getAccountId());
                 }
 
                 amountField.clear();
+                descField.clear();
 
             } catch (NumberFormatException ex) {
                 showError("Invalid Input", "Please enter a valid numeric amount.");
@@ -99,13 +124,22 @@ public class SavingsPane extends BorderPane {
                 } else {
                     updateLabels();
                     app.getDatabase().updateBalance(
-                        savings.getId(),
-                        savings.getBalance(),
-                        savings.getAccountType()
+                        savings.getId(), savings.getBalance(), savings.getAccountType()
                     );
+
+                    // Save transaction
+                    TransactionRecord tr = new TransactionRecord(
+                    	    amount * 1,
+                    	    descField.getText(),
+                    	    LocalDateTime.now(),
+                    	    "Savings",
+                    	    "Deposit"
+                    	);
+                    addTransaction(tr, savings.getAccountId());
                 }
 
                 amountField.clear();
+                descField.clear();
 
             } catch (NumberFormatException ex) {
                 showError("Invalid Input", "Please enter a valid amount.");
@@ -113,6 +147,7 @@ public class SavingsPane extends BorderPane {
             }
         });
     }
+
     private void updateLabels() {
         User user = userSelection.getSelectedUser();
         savingsLabel.setText("Savings: $" + user.getSavingsAccount().getBalance());
@@ -125,5 +160,18 @@ public class SavingsPane extends BorderPane {
         alert.setContentText(message);
         alert.getButtonTypes().setAll(ButtonType.OK);
         alert.showAndWait();
+    }
+    
+    // Add transaction to list
+    private void addTransaction(TransactionRecord tr, int userId) {
+        transactionList.add(tr);
+        BankDatabase.getDatabase().insertTransaction(userId, tr);
+    }
+
+    // Load transactions to database
+    private void loadTransactions(int userId) {
+        transactionList.clear();
+        List<TransactionRecord> transactions = BankDatabase.getDatabase().getTransactions(userId);
+        transactionList.addAll(transactions);
     }
 }

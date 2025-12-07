@@ -3,6 +3,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,6 +24,7 @@ public class BankDatabase {
     private BankDatabase() {
         users = new ArrayList<>();
         createUsersTable();
+        createTransactionsTable();
         loadUsersFromDB();
         System.out.println("Loaded users: " + users.size());
     }
@@ -99,6 +101,87 @@ public class BankDatabase {
             e.printStackTrace();
         }
     }
+    
+    private void createTransactionsTable() {
+        String sql = """
+            CREATE TABLE IF NOT EXISTS transactions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                userId INTEGER NOT NULL,
+                accountType TEXT NOT NULL,
+                transactionType TEXT NOT NULL,
+                amount REAL NOT NULL,
+                description TEXT CHECK(LENGTH(description) <= 20),
+                date TEXT NOT NULL,
+                FOREIGN KEY(userId) REFERENCES users(id)
+            );
+        """;
+
+        try (Connection conn = DatabaseConnector.connect();
+             Statement stmt = conn.createStatement()) {
+            stmt.execute(sql);
+            System.out.println("Transactions table ready.");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public void insertTransaction(int accountId, TransactionRecord tr) {
+        String sql = "INSERT INTO transactions(userId, accountType, transactionType, amount, description, date) VALUES(?,?,?,?,?,?)";
+        try (Connection conn = DatabaseConnector.connect();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, accountId);
+            stmt.setString(2, tr.getAccountType());
+            stmt.setString(3, tr.getTransactionType());
+            stmt.setDouble(4, tr.getAmount());
+            stmt.setString(5, tr.getDescription());
+            stmt.setString(6, tr.getDateTime().toString()); 
+
+            stmt.executeUpdate();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    // Get all transactions for an account
+    public List<TransactionRecord> getTransactions(int userId) {
+        List<TransactionRecord> transactions = new ArrayList<>();
+        String sql = "SELECT accountType, transactionType, amount, description, date FROM transactions WHERE userId = ? ORDER BY id";
+
+        try (Connection conn = DatabaseConnector.connect();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, userId);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                String accountType = rs.getString("accountType");
+                String transactionType = rs.getString("transactionType");
+                double amount = rs.getDouble("amount");
+                String description = rs.getString("description");
+                String dateStr = rs.getString("date");
+
+                // Parse full LocalDateTime
+                LocalDateTime dateTime = LocalDateTime.parse(dateStr); // expects yyyy-MM-ddTHH:mm:ss
+
+                TransactionRecord tr = new TransactionRecord(
+                    amount,
+                    description,
+                    dateTime,
+                    accountType,
+                    transactionType
+                );
+
+                transactions.add(tr);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return transactions;
+    }
+    
     // Insert user from DB
     private void insertUserIntoDB(User user) {
         String sql = "INSERT INTO users(username, age, savings, checking, goals, goalName, goalCost) VALUES(?,?,?,?,?,?,?)";
@@ -129,6 +212,7 @@ public class BankDatabase {
             e.printStackTrace();
         }
     }
+    
     
     // Update balances in account
     public void updateBalance(int accountId, double newBalance, String accountType) {
