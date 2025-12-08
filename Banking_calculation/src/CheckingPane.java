@@ -150,7 +150,7 @@ public class CheckingPane extends BorderPane {
     
     private void updateLabels() {
         User user = userSelection.getSelectedUser();
-        checkingLabel.setText("Checking: $" + user.getCheckingAccount().getBalance());
+        checkingLabel.setText("Checking: $" + String.format("%,.2f", user.getCheckingAccount().getBalance()));
     }
 
     private void showAlert(String title, String message) {

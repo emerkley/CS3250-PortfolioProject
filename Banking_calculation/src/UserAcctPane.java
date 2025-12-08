@@ -27,6 +27,10 @@ public class UserAcctPane extends BorderPane {
         savingsLabel = new Label();
         goalLabel = new Label();
         updateLabels(); // Show current balances
+        
+        checkingLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+        savingsLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+        goalLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
 
         VBox infoBox = new VBox(10, checkingLabel, savingsLabel, goalLabel);
         infoBox.setAlignment(Pos.CENTER_LEFT);
@@ -59,9 +63,9 @@ public class UserAcctPane extends BorderPane {
     // Helper to refresh displayed balances
     private void updateLabels() {
         User user = userSelection.getSelectedUser();
-        checkingLabel.setText("Checking: $" + user.getCheckingAccount().getBalance());
-        savingsLabel.setText("Savings: $" + user.getSavingsAccount().getBalance());
+        checkingLabel.setText("Checking: $" + String.format("%,.2f", user.getCheckingAccount().getBalance()));
+        savingsLabel.setText("Savings: $" + String.format("%,.2f", user.getSavingsAccount().getBalance()));
         goalLabel.setText("Goal (" + user.getGoalAccount().getGoalName() + "): $" 
-            + user.getGoalAccount().getBalance());
+            + String.format("%,.2f", user.getGoalAccount().getBalance()));
     }
 }

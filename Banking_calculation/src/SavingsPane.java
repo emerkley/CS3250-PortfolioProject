@@ -150,7 +150,7 @@ public class SavingsPane extends BorderPane {
 
     private void updateLabels() {
         User user = userSelection.getSelectedUser();
-        savingsLabel.setText("Savings: $" + user.getSavingsAccount().getBalance());
+        savingsLabel.setText("Savings: $" + String.format("%,.2f", user.getSavingsAccount().getBalance()));
     }
     
     // ChatGPT suggested to put all alerts below and call to them 

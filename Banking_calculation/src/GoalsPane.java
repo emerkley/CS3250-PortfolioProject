@@ -56,8 +56,8 @@ public class GoalsPane extends BorderPane {
         HBox buttonBox = new HBox(10, depositBtn, withdrawBtn);
         buttonBox.setAlignment(Pos.TOP_LEFT);
 
-        VBox leftColumn = new VBox(10, goalsLabel, progressLabel, createGoalBtn, descLabel, descField,
-                amountLabel, amountField, buttonBox);
+        VBox leftColumn = new VBox(10, goalsLabel, progressLabel, createGoalBtn, amountLabel, amountField, 
+        		 descLabel, descField, buttonBox);
         leftColumn.setAlignment(Pos.TOP_LEFT);
         leftColumn.setStyle("-fx-padding: 15;");
         
@@ -219,7 +219,7 @@ public class GoalsPane extends BorderPane {
         }
 
         goalsLabel.setText("Goal: " + acc.getGoalName() + 
-            "\nSaved: $" + acc.getBalance() + " / $" + acc.getGoalCost());
+            "\nSaved: $" + String.format("%,.2f",  acc.getBalance()) + " / $" + String.format("%,.2f", acc.getGoalCost()));
 
         progressLabel.setText("Progress: " + String.format("%.2f", acc.getProgress()) + "%");
 
